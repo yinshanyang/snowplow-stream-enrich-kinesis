@@ -1,0 +1,69 @@
+enrich {
+  streams {
+    in {
+      raw = ${ENRICH_STREAMS_IN_RAW}
+    }
+
+    out {
+      enriched = ${ENRICH_STREAMS_OUT_ENRICHED}
+      bad = ${ENRICH_STREAMS_OUT_BAD}
+      partitionKey = ${ENRICH_STREAMS_OUT_PARTITION_KEY}
+    }
+
+    sourceSink {
+      customEndpoint = ${?ENRICH_STREAMS_SOURCE_SINK_CUSTOM_ENDPOINT}
+      dynamodbCustomEndpoint = ${?ENRICH_STREAMS_SOURCE_SINK_DYNAMODB_CUSTOM_ENDPOINT}
+
+      enabled = kinesis
+      region = ${ENRICH_STREAMS_SOURCE_SINK_REGION}
+
+      aws {
+        # accessKey = iam
+        # secretKey = iam
+        accessKey = ${ENRICH_STREAMS_SOURCE_SINK_AWS_ACCESS_KEY}
+        secretKey = ${ENRICH_STREAMS_SOURCE_SINK_AWS_SECRET_KEY}
+      }
+
+      maxRecords = 1000
+      maxRecords = ${?ENRICH_MAX_RECORDS}
+      initialPosition = TRIM_HORIZON
+      initialPosition = ${?ENRICH_STREAMS_SOURCE_SINK_INITIAL_POSITION}
+      initialTimestamp = "{{initialTimestamp}}"
+      initialTimestamp = ${?ENRICH_STREAMS_SOURCE_SINK_INITIAL_TIMESTAMP}
+
+      backoffPolicy {
+        minBackoff = 1000
+        minBackoff = ${?ENRICH_STREAMS_SOURCE_SINK_BACKOFF_POLICY_MIN_BACKOFF}
+        maxBackoff = 60000
+        maxBackoff = ${?ENRICH_STREAMS_SOURCE_SINK_BACKOFF_POLICY_MAX_BACKOFF}
+      }
+    }
+
+    buffer {
+      byteLimit = 512000
+      byteLimit = ${?ENRICH_STREAMS_BUFFER_BYTE_LIMIT}
+      recordLimit = 250
+      recordLimit = ${?ENRICH_STREAMS_BUFFER_RECORD_LIMIT}
+      timeLimit = 10000
+      timeLimit = ${?ENRICH_STREAMS_BUFFER_TIME_LIMIT}
+    }
+
+    appName = ${ENRICH_STREAMS_APP_NAME}
+  }
+}
+
+akka {
+  # loglevel = DEBUG # 'OFF' for no logging, 'DEBUG' for all logging.
+  loglevel = OFF
+  loglevel = ${?AKKA_LOGLEVEL}
+  loggers = ["akka.event.slf4j.Slf4jLogger"]
+
+  http.server {
+    remote-address-header = on
+    raw-request-uri-header = on
+    parsing {
+      max-uri-length = 32768
+      uri-parsing-mode = relaxed
+    }
+  }
+}
